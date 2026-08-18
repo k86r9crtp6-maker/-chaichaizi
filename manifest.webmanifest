@@ -1,0 +1,11 @@
+{
+  "name": "拆拆字",
+  "short_name": "拆拆字",
+  "start_url": "./",
+  "scope": "./",
+  "display": "standalone",
+  "background_color": "#f5f0e7",
+  "theme_color": "#f5f0e7",
+  "lang": "zh-Hant",
+  "description": "用拖曳與拆解重新認識漢字的手機遊戲"
+}
