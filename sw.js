@@ -1,4 +1,4 @@
-const CACHE = 'chaichaizi-v1';
+const CACHE = 'chaichaizi-v3';
 const ASSETS = ['./', './index.html', './manifest.webmanifest'];
 
 self.addEventListener('install', event => {
@@ -24,22 +24,38 @@ self.addEventListener('activate', event => {
 self.addEventListener('fetch', event => {
   if (event.request.method !== 'GET') return;
 
+  const url = new URL(event.request.url);
+  const isPage =
+    event.request.mode === 'navigate' ||
+    url.pathname.endsWith('/index.html') ||
+    url.pathname.endsWith('/-chaichaizi/');
+
+  if (isPage) {
+    event.respondWith(
+      fetch(event.request, { cache: 'no-store' })
+        .then(response => {
+          const copy = response.clone();
+          caches.open(CACHE)
+            .then(cache => cache.put('./index.html', copy))
+            .catch(() => {});
+          return response;
+        })
+        .catch(() => caches.match('./index.html'))
+    );
+    return;
+  }
+
   event.respondWith(
-    caches.match(event.request)
-      .then(cached => {
-        if (cached) return cached;
+    caches.match(event.request).then(cached => {
+      if (cached) return cached;
 
-        return fetch(event.request)
-          .then(response => {
-            const copy = response.clone();
-
-            caches.open(CACHE)
-              .then(cache => cache.put(event.request, copy))
-              .catch(() => {});
-
-            return response;
-          })
-          .catch(() => caches.match('./index.html'));
-      })
+      return fetch(event.request).then(response => {
+        const copy = response.clone();
+        caches.open(CACHE)
+          .then(cache => cache.put(event.request, copy))
+          .catch(() => {});
+        return response;
+      });
+    })
   );
 });
